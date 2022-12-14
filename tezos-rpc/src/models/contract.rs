@@ -2,7 +2,7 @@ use tezos_core::types::encoded::ImplicitAddress;
 
 use {
     crate::serde_utils,
-    num_bigint::BigInt,
+    ibig::IBig,
     serde::{Deserialize, Serialize},
     std::collections::HashMap,
     tezos_michelson::micheline::{sequence::Sequence, Micheline},
@@ -35,12 +35,12 @@ impl From<ContractScript> for tezos_operation::operations::Script {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ContractInfo {
     #[serde(deserialize_with = "serde_utils::number_of_string")]
-    pub balance: BigInt,
+    pub balance: IBig,
     #[serde(
         default,
         deserialize_with = "serde_utils::option_number_of_option_string"
     )]
-    pub counter: Option<BigInt>,
+    pub counter: Option<IBig>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub delegate: Option<ImplicitAddress>,
     #[serde(skip_serializing_if = "Option::is_none")]

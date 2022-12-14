@@ -1,5 +1,7 @@
-use num_bigint::{BigInt, BigUint, ToBigUint};
-use num_traits::{Signed, ToPrimitive, Zero};
+use std::borrow::Borrow;
+
+use ibig::{IBig, UBig};
+use num_traits::{Signed, Zero};
 
 use crate::{
     internal::{
@@ -16,25 +18,25 @@ pub struct IntegerBytesCoder;
 
 impl Encoder<Int, Vec<u8>, Error> for IntegerBytesCoder {
     fn encode(value: &Int) -> Result<Vec<u8>> {
-        let value: BigInt = value.to_integer()?;
-        let abs = value.abs().to_biguint().unwrap();
+        let value: IBig = value.try_into()?;
+        let abs: UBig = value.abs().try_into()?;
 
-        let byte = &abs & BigUint::from(0b0011_1111u8);
-        let next_value = abs >> 6u8;
+        let byte = &abs & UBig::from(0b0011_1111u8);
+        let next_value = abs >> 6;
 
-        let sequence_mask = if next_value == BigUint::zero() {
-            BigUint::from(0b0000_0000u8)
+        let sequence_mask = if next_value == UBig::zero() {
+            UBig::from(0b0000_0000u8)
         } else {
-            BigUint::from(0b1000_0000u8)
+            UBig::from(0b1000_0000u8)
         };
-        let sign_mask = if value < BigInt::zero() {
-            BigUint::from(0b0100_0000u8)
+        let sign_mask = if value < IBig::zero() {
+            UBig::from(0b0100_0000u8)
         } else {
-            BigUint::from(0b0000_0000u8)
+            UBig::from(0b0000_0000u8)
         };
-        let encoded_byte = (byte | sequence_mask | sign_mask).to_u8().unwrap();
+        let encoded_byte = (byte | sequence_mask | sign_mask).try_into()?;
 
-        let next_value_encoded = if next_value > BigUint::zero() {
+        let next_value_encoded = if next_value > UBig::zero() {
             NaturalBytesCoder::encode_unsigned(next_value)
         } else {
             vec![]
@@ -55,7 +57,7 @@ impl Decoder<Int, Vec<u8>, Error> for IntegerBytesCoder {
 impl ConsumingDecoder<Int, u8, Error> for IntegerBytesCoder {
     fn decode_consuming<CL: ConsumableList<u8>>(value: &mut CL) -> Result<Int> {
         let byte = value.consume_first()?;
-        let part = BigInt::from(byte & 0b0011_1111u8);
+        let part = IBig::from(byte & 0b0011_1111u8);
         let sign = if (byte & 0b0100_0000u8) == 0b0100_0000u8 {
             -1i8
         } else {
@@ -63,15 +65,13 @@ impl ConsumingDecoder<Int, u8, Error> for IntegerBytesCoder {
         };
         let has_next = (byte & 0b1000_0000u8) == 0b1000_0000u8;
         let abs = if has_next {
-            let decoded: BigInt = NaturalBytesCoder::decode_consuming(value)?
-                .to_biguint()
-                .unwrap()
-                .into();
-            part + (decoded << 6u8)
+            let nat = NaturalBytesCoder::decode_consuming(value)?;
+            let decoded: IBig = nat.borrow() .try_into()?;
+            part + (decoded << 6)
         } else {
             part
         };
-        let result: BigInt = abs * sign;
+        let result: IBig = abs * sign;
 
         return Ok(result.into());
     }

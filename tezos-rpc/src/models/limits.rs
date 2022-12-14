@@ -1,4 +1,4 @@
-use num_bigint::BigUint;
+use ibig::UBig;
 
 pub const GAS_SAFETY_MARGIN: u64 = 100;
 pub const STORAGE_SAFETY_MARGIN: u64 = 100;
@@ -30,8 +30,8 @@ impl Default for Limits {
 
 #[derive(Debug, Clone)]
 pub struct OperationLimits {
-    pub gas: BigUint,
-    pub storage: BigUint,
+    pub gas: UBig,
+    pub storage: UBig,
 }
 
 impl OperationLimits {
@@ -54,7 +54,7 @@ impl Default for OperationLimits {
 
 #[derive(Debug, Clone)]
 pub struct BlockLimits {
-    pub gas: BigUint,
+    pub gas: UBig,
 }
 
 impl Default for BlockLimits {

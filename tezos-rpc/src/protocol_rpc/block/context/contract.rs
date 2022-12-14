@@ -105,7 +105,7 @@ mod tests {
     use {
         crate::{client::TezosRpc, error::Error, protocol_rpc::block::BlockId},
         httpmock::prelude::*,
-        num_bigint::BigInt,
+        ibig::IBig,
     };
 
     #[tokio::test]
@@ -140,7 +140,7 @@ mod tests {
 
         assert_eq!(contract.counter, None);
         assert_eq!(contract.delegate, None);
-        assert_eq!(contract.balance, BigInt::from(0u8));
+        assert_eq!(contract.balance, IBig::from(0u8));
 
         let contract_script = contract.script.expect("Script exists");
         assert!(contract_script.storage.is_primitive_application());

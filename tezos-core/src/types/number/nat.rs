@@ -1,6 +1,6 @@
 use lazy_static::lazy_static;
-use num_bigint::{BigUint, ToBigUint};
-use num_traits::{Num, Unsigned};
+use ibig::{UBig, IBig};
+use num_traits::Unsigned;
 use regex::Regex;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -85,14 +85,6 @@ impl Display for Nat {
     }
 }
 
-impl ToBigUint for Nat {
-    fn to_biguint(&self) -> Option<BigUint> {
-        BigUint::from_str_radix(&self.0, 10)
-            .map(Some)
-            .unwrap_or(None)
-    }
-}
-
 impl From<u8> for Nat {
     fn from(value: u8) -> Self {
         Self::from_integer(value)
@@ -123,8 +115,8 @@ impl From<u128> for Nat {
     }
 }
 
-impl From<BigUint> for Nat {
-    fn from(value: BigUint) -> Self {
+impl From<UBig> for Nat {
+    fn from(value: UBig) -> Self {
         Self::from_integer(value)
     }
 }
@@ -138,6 +130,12 @@ impl From<&Mutez> for Nat {
 impl From<Nat> for String {
     fn from(value: Nat) -> Self {
         value.0
+    }
+}
+
+impl From<Nat> for UBig {
+    fn from(value: Nat) -> Self {
+        UBig::from_str_radix(&value.0, 10).unwrap()
     }
 }
 
@@ -173,9 +171,21 @@ impl TryFrom<&Nat> for Vec<u8> {
     }
 }
 
-impl From<Nat> for BigUint {
-    fn from(value: Nat) -> Self {
-        value.to_biguint().unwrap()
+impl TryFrom<&Nat> for UBig {
+    type Error = Error;
+
+    fn try_from(value: &Nat) -> Result<Self> {
+        UBig::from_str_radix(&value.0, 10)
+            .map_err(|e| e.into())
+    }
+}
+
+impl TryFrom<&Nat> for IBig {
+    type Error = Error;
+
+    fn try_from(value: &Nat) -> Result<Self> {
+        IBig::from_str_radix(&value.0, 10)
+            .map_err(|e| e.into())
     }
 }
 

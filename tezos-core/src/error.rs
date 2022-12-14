@@ -19,7 +19,7 @@ pub enum Error {
     InvalidUnsignedIntegerString,
     InvalidTezString,
     BigIntParse {
-        source: num_bigint::ParseBigIntError,
+        source: ibig::error::ParseError,
     },
     IntParse {
         source: std::num::ParseIntError,
@@ -35,10 +35,7 @@ pub enum Error {
         source: std::num::TryFromIntError,
     },
     TryFromBigInt {
-        source: num_bigint::TryFromBigIntError<num_bigint::BigInt>,
-    },
-    TryFromBigUInt {
-        source: num_bigint::TryFromBigIntError<num_bigint::BigUint>,
+        source: ibig::error::OutOfBoundsError,
     },
     InvalidSecretKeyBytes,
     InvalidPublicKeyBytes,
