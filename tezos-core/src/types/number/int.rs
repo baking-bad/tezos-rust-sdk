@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
-use num_bigint::{BigInt, ToBigInt};
+use ibig::IBig;
 use num_integer::Integer;
-use num_traits::{Num, ToPrimitive};
+use num_traits::ToPrimitive;
 use regex::Regex;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -43,7 +43,7 @@ impl Int {
         Self::from(value)
     }
 
-    pub fn from_intenger<I: Integer + ToString>(value: I) -> Self {
+    pub fn from_integer<I: Integer + ToString>(value: I) -> Self {
         Self::from_string(value.to_string()).unwrap()
     }
 
@@ -94,47 +94,39 @@ impl ToPrimitive for Int {
     }
 }
 
-impl ToBigInt for Int {
-    fn to_bigint(&self) -> Option<BigInt> {
-        BigInt::from_str_radix(&self.0, 10)
-            .map(Some)
-            .unwrap_or(None)
-    }
-}
-
 impl From<i8> for Int {
     fn from(value: i8) -> Self {
-        Self::from_intenger(value)
+        Self::from_integer(value)
     }
 }
 
 impl From<i16> for Int {
     fn from(value: i16) -> Self {
-        Self::from_intenger(value)
+        Self::from_integer(value)
     }
 }
 
 impl From<i32> for Int {
     fn from(value: i32) -> Self {
-        Self::from_intenger(value)
+        Self::from_integer(value)
     }
 }
 
 impl From<i64> for Int {
     fn from(value: i64) -> Self {
-        Self::from_intenger(value)
+        Self::from_integer(value)
     }
 }
 
 impl From<i128> for Int {
     fn from(value: i128) -> Self {
-        Self::from_intenger(value)
+        Self::from_integer(value)
     }
 }
 
-impl From<BigInt> for Int {
-    fn from(value: BigInt) -> Self {
-        Self::from_intenger(value)
+impl From<IBig> for Int {
+    fn from(value: IBig) -> Self {
+        Self::from_string(value.to_string()).unwrap()
     }
 }
 
@@ -185,6 +177,15 @@ impl TryFrom<&Int> for Vec<u8> {
 
     fn try_from(value: &Int) -> Result<Self> {
         value.to_bytes()
+    }
+}
+
+impl TryFrom<&Int> for IBig {
+    type Error = Error;
+
+    fn try_from(value: &Int) -> Result<Self> {
+        IBig::from_str_radix(&value.0, 10)
+            .map_err(|e| e.into())
     }
 }
 

@@ -1,6 +1,6 @@
 use {
     crate::serde_utils,
-    num_bigint::BigInt,
+    ibig::IBig,
     serde::{Deserialize, Serialize},
 };
 
@@ -57,12 +57,12 @@ pub struct Constants {
         skip_serializing_if = "Option::is_none",
         deserialize_with = "serde_utils::option_number_of_option_string"
     )]
-    pub hard_gas_limit_per_operation: Option<BigInt>,
+    pub hard_gas_limit_per_operation: Option<IBig>,
     #[serde(
         skip_serializing_if = "Option::is_none",
         deserialize_with = "serde_utils::option_number_of_option_string"
     )]
-    pub hard_gas_limit_per_block: Option<BigInt>,
+    pub hard_gas_limit_per_block: Option<IBig>,
     #[serde(
         skip_serializing_if = "Option::is_none",
         deserialize_with = "serde_utils::option_number_of_option_string"
@@ -73,13 +73,13 @@ pub struct Constants {
         skip_serializing_if = "Option::is_none",
         deserialize_with = "serde_utils::option_number_of_option_string"
     )]
-    pub tokens_per_roll: Option<BigInt>,
+    pub tokens_per_roll: Option<IBig>,
     /// Mutez
     #[serde(
         skip_serializing_if = "Option::is_none",
         deserialize_with = "serde_utils::option_number_of_option_string"
     )]
-    pub seed_nonce_revelation_tip: Option<BigInt>,
+    pub seed_nonce_revelation_tip: Option<IBig>,
     /// integer ∈ [-2^30, 2^30]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub origination_size: Option<i32>,
@@ -88,30 +88,30 @@ pub struct Constants {
         default,
         deserialize_with = "serde_utils::option_number_of_option_string"
     )]
-    pub baking_reward_fixed_portion: Option<BigInt>,
+    pub baking_reward_fixed_portion: Option<IBig>,
     /// Mutez
     #[serde(
         default,
         deserialize_with = "serde_utils::option_number_of_option_string"
     )]
-    pub baking_reward_bonus_per_slot: Option<BigInt>,
+    pub baking_reward_bonus_per_slot: Option<IBig>,
     /// Mutez
     #[serde(
         default,
         deserialize_with = "serde_utils::option_number_of_option_string"
     )]
-    pub endorsing_reward_per_slot: Option<BigInt>,
+    pub endorsing_reward_per_slot: Option<IBig>,
     /// Mutez
     #[serde(
         default,
         deserialize_with = "serde_utils::option_number_of_option_string"
     )]
-    pub cost_per_byte: Option<BigInt>,
+    pub cost_per_byte: Option<IBig>,
     #[serde(
         default,
         deserialize_with = "serde_utils::option_number_of_option_string"
     )]
-    pub hard_storage_limit_per_operation: Option<BigInt>,
+    pub hard_storage_limit_per_operation: Option<IBig>,
     /// integer ∈ [-2^31-1, 2^31]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub quorum_min: Option<i32>,
@@ -165,7 +165,7 @@ pub struct Constants {
         default,
         deserialize_with = "serde_utils::option_number_of_option_string"
     )]
-    pub double_baking_punishment: Option<BigInt>,
+    pub double_baking_punishment: Option<IBig>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ratio_of_frozen_deposits_slashed_per_double_endorsement: Option<RatioConstant>,
     /// A random generation state (Base58Check-encoded)
@@ -199,7 +199,7 @@ pub struct Constants {
         default,
         deserialize_with = "serde_utils::option_number_of_option_string"
     )]
-    pub tx_rollup_commitment_bond: Option<BigInt>,
+    pub tx_rollup_commitment_bond: Option<IBig>,
     /// integer ∈ [-2^30, 2^30]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tx_rollup_finality_period: Option<i32>,

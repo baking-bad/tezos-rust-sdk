@@ -6,7 +6,7 @@ mod set_deposits_limit;
 mod transaction;
 
 use async_trait::async_trait;
-use num_bigint::BigUint;
+use ibig::UBig;
 use tezos_core::types::mutez::Mutez;
 use tezos_operation::operations::{Operation as TraitOperation, UnsignedOperation};
 
@@ -173,7 +173,7 @@ impl<O: TraitOperation> MaxLimits for O {
             .filter(|content| !content.has_fee())
             .collect::<Vec<_>>()
             .len();
-        let max_gas_limit_per_operation: BigUint = if requires_estimation > 0 {
+        let max_gas_limit_per_operation: UBig = if requires_estimation > 0 {
             available_gas_limit_per_block / requires_estimation
         } else {
             0u8.into()
@@ -277,17 +277,17 @@ impl TryUpdateWith<OperationContent> for tezos_operation::operations::OperationC
 }
 
 fn fee(operation_size: usize, limits: &OperationLimits) -> Result<Mutez> {
-    let gas_fee: Mutez = nanotez_to_mutez(BigUint::from(FEE_PER_GAS_UNIT) * limits.gas.clone())?;
+    let gas_fee: Mutez = nanotez_to_mutez(UBig::from(FEE_PER_GAS_UNIT) * limits.gas.clone())?;
     let storage_fee: Mutez =
-        nanotez_to_mutez(BigUint::from(FEE_PER_STORAGE_BYTE) * BigUint::from(operation_size))?;
+        nanotez_to_mutez(UBig::from(FEE_PER_STORAGE_BYTE) * UBig::from(operation_size))?;
     let base: Mutez = BASE_FEE.into();
     let safty_margin: Mutez = FEE_SAFTY_MARGIN.into();
 
     Ok(base + gas_fee + storage_fee + safty_margin)
 }
 
-fn nanotez_to_mutez(value: BigUint) -> Result<Mutez> {
-    if value.clone() % NANO_TEZ_PER_MUTEZ == 0u8.into() {
+fn nanotez_to_mutez(value: UBig) -> Result<Mutez> {
+    if value.clone() % NANO_TEZ_PER_MUTEZ == 0u64 {
         return Ok((value / NANO_TEZ_PER_MUTEZ).try_into()?);
     }
 
@@ -400,9 +400,9 @@ impl InternalOperationResult {
 trait RpcOperationResult {
     fn status(&self) -> OperationResultStatus;
     fn number_of_originated_contracts(&self) -> usize;
-    fn consumed_gas(&self) -> BigUint;
-    fn consumed_milligas(&self) -> BigUint;
-    fn paid_storage_size_diff(&self) -> Option<BigUint>;
+    fn consumed_gas(&self) -> UBig;
+    fn consumed_milligas(&self) -> UBig;
+    fn paid_storage_size_diff(&self) -> Option<UBig>;
     fn allocated_destination_contract(&self) -> Option<bool>;
     fn errors(&self) -> Option<&Vec<RpcError>>;
 
@@ -425,8 +425,8 @@ trait RpcOperationResult {
         })
     }
 
-    fn burn_fee(&self) -> BigUint {
-        let mut sum: BigUint = 0u8.into();
+    fn burn_fee(&self) -> UBig {
+        let mut sum: UBig = 0u8.into();
         if let Some(allocated) = self.allocated_destination_contract() {
             if allocated {
                 sum += 257u16;

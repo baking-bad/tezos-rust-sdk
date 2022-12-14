@@ -22,7 +22,7 @@ impl RpcOperationResult for SetDepositsLimitOperationResult {
         0
     }
 
-    fn consumed_gas(&self) -> num_bigint::BigUint {
+    fn consumed_gas(&self) -> ibig::UBig {
         self.consumed_gas
             .as_ref()
             .map_or(0u8.into(), |consumed_gas| {
@@ -30,7 +30,7 @@ impl RpcOperationResult for SetDepositsLimitOperationResult {
             })
     }
 
-    fn consumed_milligas(&self) -> num_bigint::BigUint {
+    fn consumed_milligas(&self) -> ibig::UBig {
         self.consumed_milligas
             .as_ref()
             .map_or(0u8.into(), |consumed_gas| {
@@ -38,7 +38,7 @@ impl RpcOperationResult for SetDepositsLimitOperationResult {
             })
     }
 
-    fn paid_storage_size_diff(&self) -> Option<num_bigint::BigUint> {
+    fn paid_storage_size_diff(&self) -> Option<ibig::UBig> {
         None
     }
 
