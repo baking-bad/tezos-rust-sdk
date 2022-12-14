@@ -27,6 +27,7 @@ pub struct BootstrappedStatus {
 mod test {
     use super::*;
     use crate::error::Error;
+    use serde_json;
 
     #[test]
     fn test_serde_serialize() -> Result<(), Error> {

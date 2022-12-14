@@ -51,7 +51,7 @@ mod tests {
 
     use {
         crate::client::TezosRpc, crate::error::Error,
-        crate::models::bootstrapped_status::ChainStatus, httpmock::prelude::*,
+        crate::models::bootstrapped_status::ChainStatus, httpmock::prelude::*, serde_json
     };
 
     #[tokio::test]

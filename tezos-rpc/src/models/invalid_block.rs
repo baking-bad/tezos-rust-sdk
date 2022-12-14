@@ -14,6 +14,7 @@ pub struct InvalidBlock {
 mod test {
 
     use super::*;
+    use serde_json;
 
     #[test]
     fn test_serde_serialize() -> Result<(), crate::error::Error> {

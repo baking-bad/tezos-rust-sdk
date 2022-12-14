@@ -3,6 +3,7 @@ use {
         balance_update::BalanceUpdate, operation::kind::OperationKind,
         operation::operation_result::operations::tx_rollup_rejection::TxRollupRejectionOperationResult,
     },
+    crate::serde_utils::Object,
     serde::{Deserialize, Serialize},
     tezos_core::types::{
         encoded::{
@@ -74,7 +75,7 @@ pub struct TxRollupRejectionProof {
     pub version: i16,
     pub before: ValueOrNodeContext,
     pub after: ValueOrNodeContext,
-    pub state: serde_json::Value,
+    pub state: Object,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

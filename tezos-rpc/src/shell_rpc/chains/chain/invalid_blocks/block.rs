@@ -3,7 +3,10 @@ use tezos_core::types::encoded::{BlockHash, Encoded};
 use crate::{client::TezosRpcChainId, http::Http};
 
 use {
-    crate::client::TezosRpcContext, crate::error::Error, crate::models::invalid_block::InvalidBlock,
+    crate::client::TezosRpcContext,
+    crate::error::Error,
+    crate::models::invalid_block::InvalidBlock,
+    crate::serde_utils::Object,
 };
 
 fn path<S: AsRef<str>>(chain_id: S, block_hash: S) -> String {
@@ -70,7 +73,7 @@ impl<'a, HttpClient: Http> DeleteRPCRequestBuilder<'a, HttpClient> {
 
         self.ctx
             .http_client()
-            .delete::<(), serde_json::Value>(path.as_str(), None)
+            .delete::<(), Object>(path.as_str(), None)
             .await?;
 
         Ok(())
@@ -103,7 +106,7 @@ mod tests {
 
     use crate::client::TezosRpcChainId;
 
-    use {crate::client::TezosRpc, crate::error::Error, httpmock::prelude::*};
+    use {crate::client::TezosRpc, crate::error::Error, httpmock::prelude::*, serde_json};
 
     #[tokio::test]
     async fn test_get_invalid_block() -> Result<(), Error> {

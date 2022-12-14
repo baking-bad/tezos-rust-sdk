@@ -3,6 +3,7 @@ use {
         balance_update::BalanceUpdate, operation::kind::OperationKind,
         operation::operation_result::operations::tx_rollup_origination::TxRollupOriginationOperationResult,
     },
+    crate::serde_utils::Object,
     serde::{Deserialize, Serialize},
     tezos_core::types::{encoded::ImplicitAddress, mutez::Mutez},
 };
@@ -17,7 +18,7 @@ pub struct TxRollupOrigination {
     pub counter: String,
     pub gas_limit: String,
     pub storage_limit: String,
-    pub tx_rollup_origination: serde_json::Value,
+    pub tx_rollup_origination: Object,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub metadata: Option<TxRollupOriginationMetadata>,
 }
