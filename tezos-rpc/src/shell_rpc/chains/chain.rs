@@ -6,7 +6,7 @@ pub mod invalid_blocks;
 pub mod is_bootstrapped;
 pub mod levels;
 
-use {crate::client::TezosRpcContext, crate::error::Error, serde::Serialize};
+use {crate::client::TezosRpcContext, crate::error::Error, crate::serde_utils::Object, serde::Serialize};
 
 fn path<S: AsRef<str>>(chain_id: S) -> String {
     format!("{}/{}", super::path(), chain_id.as_ref())
@@ -41,7 +41,7 @@ impl<'a, HttpClient: Http> RpcRequestBuilder<'a, HttpClient> {
 
         self.ctx
             .http_client()
-            .patch::<_, serde_json::Value>(path.as_str(), Some(self.payload))
+            .patch::<_, Object>(path.as_str(), Some(self.payload))
             .await?;
 
         Ok(())

@@ -1,6 +1,7 @@
 use {
-    serde::{Deserialize, Deserializer},
+    serde::{Deserialize, Deserializer, Serialize},
     std::str::FromStr,
+    std::collections::HashMap,
 };
 
 pub(crate) mod rfc3339_timestamp {
@@ -100,3 +101,10 @@ where
         Err(_) => Ok(None),
     }
 }
+
+#[cfg(not(serde_json))]
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Object(HashMap<String, String>);
+
+#[cfg(serde_json)]
+pub type Object = serde_json::Value;

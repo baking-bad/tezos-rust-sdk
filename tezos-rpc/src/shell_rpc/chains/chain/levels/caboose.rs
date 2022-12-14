@@ -46,7 +46,7 @@ pub fn get<HttpClient: Http>(ctx: &TezosRpcContext<HttpClient>) -> RpcRequestBui
 mod tests {
     use crate::client::TezosRpcChainId;
 
-    use {crate::client::TezosRpc, crate::error::Error, httpmock::prelude::*};
+    use {crate::client::TezosRpc, crate::error::Error, httpmock::prelude::*, serde_json};
 
     #[tokio::test]
     async fn test_get_caboose() -> Result<(), Error> {

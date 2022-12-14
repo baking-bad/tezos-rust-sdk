@@ -114,6 +114,7 @@ mod tests {
         crate::client::TezosRpc,
         crate::error::Error,
         httpmock::prelude::*,
+        serde_json,
     };
 
     #[tokio::test]
