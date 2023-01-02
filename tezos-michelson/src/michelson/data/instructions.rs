@@ -8,7 +8,7 @@ make_instructions!(
     (Swap, SWAP, swap, 76),
     (GetAndUpdate, GET_AND_UPDATE, get_and_update, 140),
     (Apply, APPLY, apply, 115),
-    (FailWith, FAIL_WITH, fail_with, 39),
+    (FailWith, FAILWITH, failwith, 39),
     (
         Rename,
         RENAME,
@@ -118,7 +118,14 @@ make_instructions!(
     ),
     (Slice, SLICE, slice, 111),
     (Pack, PACK, pack, 12),
-    (Unpack, UNPACK, unpack, 13),
+    (
+        Unpack,
+        UNPACK,
+        unpack,
+        13,
+        metadata_type: crate::michelson::metadata::TypeVariableMetadata,
+        (r#type: crate::michelson::types::Type)
+    ),
     (
         Add,
         ADD,
@@ -296,6 +303,13 @@ make_instructions!(
         SUB,
         sub,
         75,
+        metadata_type: crate::michelson::metadata::VariableMetadata
+    ),
+    (
+        SubMutez,
+        SUB_MUTEZ,
+        sub_mutez,
+        147,
         metadata_type: crate::michelson::metadata::VariableMetadata
     ),
     (
