@@ -268,7 +268,11 @@ macro_rules! make_instruction {
                     let mut args = value.into_args().unwrap_or(vec![]);
                     Ok(Self {
                         $(
-                            $opt_field_name: if !args.is_empty() { args.remove(0).try_into().ok() } else { None },
+                            $opt_field_name: match args.get(0) {
+                                Some(Micheline::Literal(_)) => Some(args.remove(0).try_into()?),
+                                Some(_) => None,
+                                None => None
+                            },
                         )*
                         $(
                             $field_name: if !args.is_empty() { args.remove(0).try_into()? } else { Err(Error::InvalidPrimitiveApplication)? },
