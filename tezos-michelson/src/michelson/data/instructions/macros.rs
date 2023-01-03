@@ -207,12 +207,12 @@ macro_rules! make_instruction {
                 fn from(value: $name) -> Self {
                     let mut args: Vec<Micheline> = vec![];
                     $(
-                        args.push(value.$field_name.into());
-                    )*
-                    $(
                         if let Some(value) = value.$opt_field_name {
                             args.push(value.into());
                         }
+                    )*
+                    $(
+                        args.push(value.$field_name.into());
                     )*
                     $(
                         args.push((*value.$boxed_field_name).into());
