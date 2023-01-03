@@ -123,7 +123,7 @@ impl Normalizer<Type> for MichelsonNormalizer {
                 types::List::new(Self::normalize(*value.r#type), Some(value.metadata)).into()
             }
             Type::Set(value) => {
-                types::Set::new(Self::normalize(value.r#type), Some(value.metadata)).into()
+                types::Set::new(Self::normalize(*value.r#type), Some(value.metadata)).into()
             }
             Type::Contract(value) => {
                 types::Contract::new(Self::normalize(*value.r#type), Some(value.metadata)).into()
