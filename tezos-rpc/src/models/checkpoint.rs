@@ -12,6 +12,7 @@ pub struct Checkpoint {
 #[cfg(test)]
 mod test {
     use crate::error::Error;
+    use serde_json;
 
     use super::*;
 

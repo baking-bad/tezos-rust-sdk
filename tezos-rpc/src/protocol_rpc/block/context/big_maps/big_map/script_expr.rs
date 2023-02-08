@@ -126,6 +126,7 @@ mod tests {
     use {
         crate::{client::TezosRpc, error::Error, protocol_rpc::block::BlockId},
         httpmock::prelude::*,
+        serde_json
     };
 
     #[tokio::test]

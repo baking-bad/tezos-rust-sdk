@@ -127,6 +127,7 @@ mod tests {
             protocol_rpc::block::BlockId,
         },
         httpmock::prelude::*,
+        serde_json
     };
 
     #[tokio::test]

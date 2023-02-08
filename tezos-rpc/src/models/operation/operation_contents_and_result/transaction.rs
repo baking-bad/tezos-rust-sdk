@@ -15,12 +15,6 @@ use {
     tezos_michelson::micheline::Micheline,
 };
 
-const DEFAULT: &'static str = "default";
-const ROOT: &'static str = "root";
-const DO: &'static str = "do";
-const SET_DELEGATE: &'static str = "set_delegate";
-const REMOVE_DELEGATE: &'static str = "remove_delegate";
-
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Transaction {
     /// [OperationKind::Transaction]
@@ -85,14 +79,14 @@ pub struct TransactionMetadata {
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct TransactionParameters {
-    pub entrypoint: Entrypoint,
+    pub entrypoint: String,
     pub value: Micheline,
 }
 
 impl From<tezos_operation::operations::Parameters> for TransactionParameters {
     fn from(value: tezos_operation::operations::Parameters) -> Self {
         Self {
-            entrypoint: value.entrypoint.into(),
+            entrypoint: value.entrypoint.to_str().into(),
             value: value.value,
         }
     }
@@ -101,71 +95,8 @@ impl From<tezos_operation::operations::Parameters> for TransactionParameters {
 impl From<TransactionParameters> for tezos_operation::operations::Parameters {
     fn from(value: TransactionParameters) -> Self {
         Self {
-            entrypoint: value.entrypoint.into(),
+            entrypoint: value.entrypoint.as_str().into(),
             value: value.value,
-        }
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
-#[serde(untagged)]
-pub enum Entrypoint {
-    Default,
-    Root,
-    Do,
-    SetDelegate,
-    RemoveDelegate,
-    Named(String),
-}
-
-impl From<&str> for Entrypoint {
-    fn from(value: &str) -> Self {
-        match value {
-            DEFAULT => Entrypoint::Default,
-            ROOT => Entrypoint::Root,
-            DO => Entrypoint::Do,
-            SET_DELEGATE => Entrypoint::SetDelegate,
-            REMOVE_DELEGATE => Entrypoint::RemoveDelegate,
-            _ => Entrypoint::Named(value.into()),
-        }
-    }
-}
-
-impl From<String> for Entrypoint {
-    fn from(value: String) -> Self {
-        match value.as_str() {
-            DEFAULT => Entrypoint::Default,
-            ROOT => Entrypoint::Root,
-            DO => Entrypoint::Do,
-            SET_DELEGATE => Entrypoint::SetDelegate,
-            REMOVE_DELEGATE => Entrypoint::RemoveDelegate,
-            _ => Entrypoint::Named(value),
-        }
-    }
-}
-
-impl From<tezos_operation::operations::Entrypoint> for Entrypoint {
-    fn from(value: tezos_operation::operations::Entrypoint) -> Self {
-        match value {
-            tezos_operation::operations::Entrypoint::Default => Self::Default,
-            tezos_operation::operations::Entrypoint::Root => Self::Root,
-            tezos_operation::operations::Entrypoint::Do => Self::Do,
-            tezos_operation::operations::Entrypoint::SetDelegate => Self::SetDelegate,
-            tezos_operation::operations::Entrypoint::RemoveDelegate => Self::RemoveDelegate,
-            tezos_operation::operations::Entrypoint::Named(value) => Self::Named(value),
-        }
-    }
-}
-
-impl From<Entrypoint> for tezos_operation::operations::Entrypoint {
-    fn from(value: Entrypoint) -> Self {
-        match value {
-            Entrypoint::Default => Self::Default,
-            Entrypoint::Root => Self::Root,
-            Entrypoint::Do => Self::Do,
-            Entrypoint::SetDelegate => Self::SetDelegate,
-            Entrypoint::RemoveDelegate => Self::RemoveDelegate,
-            Entrypoint::Named(value) => Self::Named(value),
         }
     }
 }

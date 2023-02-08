@@ -68,6 +68,7 @@ pub struct RevealMetadata {
 mod tests {
     use super::*;
     use crate::models::operation::kind::OperationKind;
+    use serde_json;
 
     #[test]
     fn test_serialize() {

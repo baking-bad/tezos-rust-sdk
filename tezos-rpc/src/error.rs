@@ -15,6 +15,7 @@ pub enum Error {
     HttpError {
         source: reqwest::Error,
     },
+    #[cfg(any(test, feature = "serde_json"))]
     ParsingError {
         source: serde_json::Error,
     },
