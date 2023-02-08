@@ -168,6 +168,15 @@ impl<HttpClient: Http> TezosRpc<HttpClient> {
 impl<HttpClient: Http> TezosRpc<HttpClient> {
     /// Get the chain unique identifier.
     ///
+    /// [`GET /version`](https://tezos.gitlab.io/shell/rpc.html#get-version)
+    pub fn get_version(
+        &self,
+    ) -> shell_rpc::version::RpcRequestBuilder<HttpClient> {
+        shell_rpc::version::get(&self.context)
+    }
+
+    /// Get the chain unique identifier.
+    ///
     /// [`GET /chains/<chain_id>/chain_id`](https://tezos.gitlab.io/shell/rpc.html#get-chains-chain-id-chain-id)
     pub fn get_chain_id(
         &self,
