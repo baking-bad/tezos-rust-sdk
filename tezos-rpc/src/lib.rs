@@ -25,8 +25,7 @@
 //! [TezosRpc::min_fee](crate::client::TezosRpc::min_fee) method, the it can be injected using [TezosRpc::inject_operation](crate::client::TezosRpc::inject_operation):
 //!
 //! ```rust
-//! use ibig::UBig;
-//! use tezos_core::types::encoded::{ImplicitAddress, SecretKey};
+//! use tezos_core::types::{encoded::{ImplicitAddress, SecretKey}, number::Nat};
 //! use tezos_rpc::{client::TezosRpc, Result, models::block::BlockId};
 //! use tezos_operation::operations::{UnsignedOperation, Transaction, SignedOperation};
 //!
@@ -36,9 +35,9 @@
 //!                     .block_id(&BlockId::Level(-2))
 //!                     .send().await?;
 //!     let source: ImplicitAddress = "tz1PwXjsrgYBi9wpe3tFhazJpt7JMTVzBp5c".try_into()?;
-//!     let counter: UBig = rpc.get_contract_counter(&source.clone().into())
+//!     let counter: Nat = rpc.get_contract_counter(&source.clone().into())
 //!                     .send()
-//!                     .await? + 1u8;
+//!                     .await? + 1u8.into();
 //!     let operation = UnsignedOperation::new(
 //!         branch,
 //!         vec![

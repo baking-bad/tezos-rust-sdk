@@ -6,8 +6,7 @@ mod set_deposits_limit;
 mod transaction;
 
 use async_trait::async_trait;
-use ibig::UBig;
-use tezos_core::types::mutez::Mutez;
+use tezos_core::types::{mutez::Mutez, number::Nat};
 use tezos_operation::operations::{Operation as TraitOperation, UnsignedOperation};
 
 use crate::{
@@ -26,6 +25,12 @@ use crate::{
     },
     Error, Result,
 };
+
+macro_rules! min {
+    ($a: expr, $b: expr) => {
+        if ($a < $b) { $a } else { $b }
+    };
+}
 
 #[async_trait]
 pub trait FeeEstimator {
@@ -173,18 +178,14 @@ impl<O: TraitOperation> MaxLimits for O {
             .filter(|content| !content.has_fee())
             .collect::<Vec<_>>()
             .len();
-        let max_gas_limit_per_operation: UBig = if requires_estimation > 0 {
-            available_gas_limit_per_block / requires_estimation
+        let max_gas_limit_per_operation = if requires_estimation > 0 {
+            available_gas_limit_per_block / requires_estimation.into()
         } else {
             0u8.into()
         };
 
         OperationLimits {
-            gas: limits
-                .operation
-                .clone()
-                .gas
-                .min(max_gas_limit_per_operation),
+            gas: min!(limits.operation.gas.clone(), max_gas_limit_per_operation),
             storage: limits.operation.storage.clone(),
         }
     }
@@ -277,21 +278,20 @@ impl TryUpdateWith<OperationContent> for tezos_operation::operations::OperationC
 }
 
 fn fee(operation_size: usize, limits: &OperationLimits) -> Result<Mutez> {
-    let gas_fee: Mutez = nanotez_to_mutez(UBig::from(FEE_PER_GAS_UNIT) * limits.gas.clone())?;
-    let storage_fee: Mutez =
-        nanotez_to_mutez(UBig::from(FEE_PER_STORAGE_BYTE) * UBig::from(operation_size))?;
+    let gas_fee: Mutez = nanotez_to_mutez(limits.gas.clone() * FEE_PER_GAS_UNIT.into())?;
+    let storage_fee: Mutez = nanotez_to_mutez(Into::<Nat>::into(operation_size) * FEE_PER_STORAGE_BYTE.into())?;
     let base: Mutez = BASE_FEE.into();
     let safty_margin: Mutez = FEE_SAFTY_MARGIN.into();
 
     Ok(base + gas_fee + storage_fee + safty_margin)
 }
 
-fn nanotez_to_mutez(value: UBig) -> Result<Mutez> {
-    if value.clone() % NANO_TEZ_PER_MUTEZ == 0u64 {
-        return Ok((value / NANO_TEZ_PER_MUTEZ).try_into()?);
+fn nanotez_to_mutez(value: Nat) -> Result<Mutez> {
+    if value.clone() % NANO_TEZ_PER_MUTEZ.into() == 0u32.into() {
+        return Ok((value / NANO_TEZ_PER_MUTEZ.into()).try_into()?);
     }
 
-    Ok(((value / NANO_TEZ_PER_MUTEZ) + 1u8).try_into()?)
+    Ok(((value / NANO_TEZ_PER_MUTEZ.into()) + 1u8.into()).try_into()?)
 }
 
 fn operation_content_matches(
@@ -400,9 +400,9 @@ impl InternalOperationResult {
 trait RpcOperationResult {
     fn status(&self) -> OperationResultStatus;
     fn number_of_originated_contracts(&self) -> usize;
-    fn consumed_gas(&self) -> UBig;
-    fn consumed_milligas(&self) -> UBig;
-    fn paid_storage_size_diff(&self) -> Option<UBig>;
+    fn consumed_gas(&self) -> Nat;
+    fn consumed_milligas(&self) -> Nat;
+    fn paid_storage_size_diff(&self) -> Option<Nat>;
     fn allocated_destination_contract(&self) -> Option<bool>;
     fn errors(&self) -> Option<&Vec<RpcError>>;
 
@@ -418,22 +418,22 @@ trait RpcOperationResult {
             return Err(error);
         }
         Ok(OperationLimits {
-            gas: (self.consumed_milligas() / 1000u32) + GAS_SAFETY_MARGIN,
+            gas: (self.consumed_milligas() / 1000u32.into()) + GAS_SAFETY_MARGIN.into(),
             storage: self.paid_storage_size_diff().unwrap_or(0u8.into())
-                + STORAGE_SAFETY_MARGIN
+                + STORAGE_SAFETY_MARGIN.into()
                 + self.burn_fee(),
         })
     }
 
-    fn burn_fee(&self) -> UBig {
-        let mut sum: UBig = 0u8.into();
+    fn burn_fee(&self) -> Nat {
+        let mut sum: Nat = 0u32.into();
         if let Some(allocated) = self.allocated_destination_contract() {
             if allocated {
-                sum += 257u16;
+                sum += 257u32.into();
             }
         }
 
-        sum += (self.number_of_originated_contracts() as u64) * 257;
+        sum += (self.number_of_originated_contracts() * 257).into();
 
         return sum;
     }

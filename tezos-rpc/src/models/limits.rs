@@ -1,4 +1,4 @@
-use ibig::UBig;
+use tezos_core::types::number::Nat;
 
 pub const GAS_SAFETY_MARGIN: u64 = 100;
 pub const STORAGE_SAFETY_MARGIN: u64 = 100;
@@ -30,8 +30,8 @@ impl Default for Limits {
 
 #[derive(Debug, Clone)]
 pub struct OperationLimits {
-    pub gas: UBig,
-    pub storage: UBig,
+    pub gas: Nat,
+    pub storage: Nat,
 }
 
 impl OperationLimits {
@@ -54,7 +54,7 @@ impl Default for OperationLimits {
 
 #[derive(Debug, Clone)]
 pub struct BlockLimits {
-    pub gas: UBig,
+    pub gas: Nat,
 }
 
 impl Default for BlockLimits {

@@ -4,7 +4,7 @@ use crate::{client::TezosRpcChainId, http::Http};
 
 use {
     crate::client::TezosRpcContext, crate::error::Error, crate::protocol_rpc::block::BlockId,
-    ibig::IBig,
+    tezos_core::types::mutez::Mutez,
 };
 
 fn path<S: AsRef<str>>(chain_id: S, block_id: &BlockId, contract: S) -> String {
@@ -44,12 +44,12 @@ impl<'a, HttpClient: Http> RpcRequestBuilder<'a, HttpClient> {
         self
     }
 
-    pub async fn send(&self) -> Result<IBig, Error> {
+    pub async fn send(&self) -> Result<Mutez, Error> {
         let path = self::path(self.chain_id.value(), self.block_id, self.contract.value());
 
         let balance: String = self.ctx.http_client().get(path.as_str()).await?;
 
-        Ok(balance.parse::<IBig>()?)
+        Ok(Mutez::try_from(balance)?)
     }
 }
 
@@ -71,16 +71,16 @@ mod tests {
 
     use {
         crate::client::TezosRpc, crate::error::Error, crate::protocol_rpc::block::BlockId,
-        httpmock::prelude::*, ibig::IBig,
+        httpmock::prelude::*,
+        tezos_core::types::mutez::Mutez,
     };
 
     #[tokio::test]
     async fn test_get_balance() -> Result<(), Error> {
         let server = MockServer::start();
         let rpc_url = server.base_url();
-
-        let contract_address: Address = "tz1bLUuUBWtJqFX2Hz3A3whYE5SNTAGHjcpL".try_into().unwrap();
-        let expected_balance = IBig::from(9999999999999999999 as u64);
+        let contract_address: Address = "tz1bLUuUBWtJqFX2Hz3A3whYE5SNTAGHjcpL".try_into()?;
+        let expected_balance: Mutez = 9999999999999999u64.try_into()?;
         let block_id = BlockId::Head;
 
         server.mock(|when, then| {

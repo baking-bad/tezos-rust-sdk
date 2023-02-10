@@ -1,13 +1,17 @@
 use lazy_static::lazy_static;
-use ibig::IBig;
-use num_integer::Integer;
+use ibig::{IBig};
 use num_traits::ToPrimitive;
 use regex::Regex;
 #[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, de};
 use std::{
     fmt::{Debug, Display},
     str::FromStr,
+};
+use derive_more::{
+    Add, AddAssign, BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Div,
+    DivAssign, Mul, MulAssign, Octal, Rem, RemAssign, Shl, ShlAssign, Shr, ShrAssign,
+    Sub, SubAssign,
 };
 
 use crate::{
@@ -22,39 +26,71 @@ lazy_static! {
 }
 
 /// An integer that can be encoded to a Zarith number
-#[derive(Debug, PartialEq, Eq, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Serialize, Deserialize),
-    serde(try_from = "String")
+#[derive(
+    Add,
+    AddAssign,
+    PartialEq,
+    PartialOrd,
+    Debug,
+    Eq,
+    Clone,
+    BitAnd,
+    BitAndAssign,
+    BitOr,
+    BitOrAssign,
+    BitXor,
+    BitXorAssign,
+    Div,
+    DivAssign,
+    Mul,
+    MulAssign,
+    Octal,
+    Rem,
+    RemAssign,
+    Shl,
+    ShlAssign,
+    Shr,
+    ShrAssign,
+    Sub,
+    SubAssign,
 )]
-pub struct Int(String);
+#[div(forward)]
+#[div_assign(forward)]
+#[mul(forward)]
+#[mul_assign(forward)]
+#[rem(forward)]
+#[rem_assign(forward)]
+pub struct Int(IBig);
+
+#[cfg(feature = "serde")]
+impl Serialize for Int {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer {
+        serializer.collect_str(&self.to_string())
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> Deserialize<'de> for Int {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+        where
+            D: serde::Deserializer<'de> {
+        Self::from(String::deserialize(deserializer)?).map_err(de::Error::custom)
+    }
+}
 
 impl Int {
     pub fn from<S: Into<String>>(value: S) -> Result<Self> {
         let value: String = value.into();
         if Self::is_valid(&value) {
-            return Ok(Self(value));
+            return Ok(Self(IBig::from_str_radix(&value, 10)?));
         }
         Err(Error::InvalidIntegerString)
     }
 
     pub fn from_string(value: String) -> Result<Self> {
         Self::from(value)
-    }
-
-    pub fn from_integer<I: Integer + ToString>(value: I) -> Self {
-        Self::from_string(value.to_string()).unwrap()
-    }
-
-    pub fn to_integer<I: Integer + FromStr>(&self) -> Result<I>
-    where
-        <I as FromStr>::Err: Debug,
-    {
-        Ok(self
-            .0
-            .parse::<I>()
-            .map_err(|_error| Error::InvalidIntegerConversion)?)
     }
 
     pub fn is_valid(value: &str) -> bool {
@@ -65,8 +101,16 @@ impl Int {
         IntegerBytesCoder::encode(self)
     }
 
-    pub fn to_str(&self) -> &str {
-        &self.0
+    pub fn to_string(&self) -> String {
+        self.0.to_string()
+    }
+}
+
+impl FromStr for Int {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        Self::from_string(s.into())
     }
 }
 
@@ -78,73 +122,81 @@ impl Display for Int {
 
 impl ToPrimitive for Int {
     fn to_i64(&self) -> Option<i64> {
-        self.to_integer().ok()
+        TryInto::<i64>::try_into(self.0.clone()).ok()
     }
 
     fn to_u64(&self) -> Option<u64> {
-        self.to_integer().ok()
+        TryInto::<u64>::try_into(self.0.clone()).ok()
     }
 
     fn to_i128(&self) -> Option<i128> {
-        self.to_integer().ok()
+        TryInto::<i128>::try_into(self.0.clone()).ok()
     }
 
     fn to_u128(&self) -> Option<u128> {
-        self.to_integer().ok()
+        TryInto::<u128>::try_into(self.0.clone()).ok()
     }
 }
 
 impl From<i8> for Int {
     fn from(value: i8) -> Self {
-        Self::from_integer(value)
+        Self(IBig::from(value))
     }
 }
 
 impl From<i16> for Int {
     fn from(value: i16) -> Self {
-        Self::from_integer(value)
+        Self(IBig::from(value))
     }
 }
 
 impl From<i32> for Int {
     fn from(value: i32) -> Self {
-        Self::from_integer(value)
+        Self(IBig::from(value))
     }
 }
 
 impl From<i64> for Int {
     fn from(value: i64) -> Self {
-        Self::from_integer(value)
+        Self(IBig::from(value))
     }
 }
 
 impl From<i128> for Int {
     fn from(value: i128) -> Self {
-        Self::from_integer(value)
+        Self(IBig::from(value))
     }
 }
 
 impl From<IBig> for Int {
     fn from(value: IBig) -> Self {
-        Self::from_string(value.to_string()).unwrap()
+        Self(value)
     }
 }
 
 impl From<Nat> for Int {
     fn from(value: Nat) -> Self {
-        Int(value.to_string())
+        let value: IBig = value.value().into();
+        Int(value)
     }
 }
 
 impl From<&Nat> for Int {
     fn from(value: &Nat) -> Self {
-        Int(value.to_string())
+        let value: IBig = value.value().into();
+        Int(value)
+    }
+}
+
+impl From<&Int> for IBig {
+    fn from(value: &Int) -> Self {
+        value.0.clone()
     }
 }
 
 impl From<Int> for String {
     fn from(value: Int) -> Self {
-        value.0
+        value.to_string()
     }
 }
 
@@ -180,12 +232,11 @@ impl TryFrom<&Int> for Vec<u8> {
     }
 }
 
-impl TryFrom<&Int> for IBig {
+impl TryFrom<&Int> for u32 {
     type Error = Error;
 
-    fn try_from(value: &Int) -> Result<Self> {
-        IBig::from_str_radix(&value.0, 10)
-            .map_err(|e| e.into())
+    fn try_from(value: &Int) -> Result<u32> {
+        Ok(value.0.clone().try_into()?)
     }
 }
 

@@ -22,9 +22,6 @@ pub enum Error {
     ParseIntError {
         source: std::num::ParseIntError,
     },
-    ParseBigIntError {
-        source: ibig::error::ParseError,
-    },
     RpcErrorPlain {
         description: String,
     },
