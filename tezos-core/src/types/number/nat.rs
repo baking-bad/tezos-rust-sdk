@@ -1,6 +1,7 @@
 use lazy_static::lazy_static;
 use ibig::{UBig, IBig};
-use num_traits::{ToPrimitive};
+use num_traits::ToPrimitive;
+use num_integer::Integer;
 use regex::Regex;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize, de};
@@ -89,6 +90,18 @@ impl Nat {
             return Ok(Self(UBig::from_str_radix(&value, 10)?));
         }
         Err(Error::InvalidIntegerString)
+    }
+
+    pub fn from_integer<I: Integer + ToString>(value: I) -> Self {
+        Self::from_string(value.to_string()).unwrap()
+    }
+
+    pub fn to_integer<I: Integer + FromStr>(&self) -> Result<I>
+    where
+        <I as FromStr>::Err: Debug,
+    {
+        I::from_str(&self.0.to_string())
+            .map_err(|_| Error::InvalidIntegerConversion)
     }
 
     pub fn from_string(value: String) -> Result<Self> {
@@ -255,6 +268,22 @@ impl TryFrom<&Nat> for Vec<u8> {
 
     fn try_from(value: &Nat) -> Result<Self> {
         value.to_bytes()
+    }
+}
+
+impl TryFrom<Nat> for usize {
+    type Error = Error;
+
+    fn try_from(value: Nat) -> Result<Self> {
+        Ok(value.0.try_into()?)
+    }
+}
+
+impl TryFrom<&Nat> for usize {
+    type Error = Error;
+
+    fn try_from(value: &Nat) -> Result<Self> {
+        Ok(value.0.clone().try_into()?)
     }
 }
 

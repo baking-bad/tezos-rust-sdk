@@ -1,6 +1,7 @@
 use lazy_static::lazy_static;
-use ibig::{IBig};
+use ibig::{IBig, UBig};
 use num_traits::ToPrimitive;
+use num_integer::Integer;
 use regex::Regex;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize, de};
@@ -87,6 +88,18 @@ impl Int {
             return Ok(Self(IBig::from_str_radix(&value, 10)?));
         }
         Err(Error::InvalidIntegerString)
+    }
+
+    pub fn from_integer<I: Integer + ToString>(value: I) -> Self {
+        Self::from_string(value.to_string()).unwrap()
+    }
+
+    pub fn to_integer<I: Integer + FromStr>(&self) -> Result<I>
+    where
+        <I as FromStr>::Err: Debug,
+    {
+        I::from_str(&self.0.to_string())
+            .map_err(|_| Error::InvalidIntegerConversion)
     }
 
     pub fn from_string(value: String) -> Result<Self> {
@@ -194,6 +207,12 @@ impl From<&Int> for IBig {
     }
 }
 
+impl From<Int> for IBig {
+    fn from(value: Int) -> Self {
+        value.0
+    }
+}
+
 impl From<Int> for String {
     fn from(value: Int) -> Self {
         value.to_string()
@@ -237,6 +256,22 @@ impl TryFrom<&Int> for u32 {
 
     fn try_from(value: &Int) -> Result<u32> {
         Ok(value.0.clone().try_into()?)
+    }
+}
+
+impl TryInto<i64> for Int {
+    type Error = Error;
+
+    fn try_into(self) -> Result<i64> {
+        Ok(self.0.try_into()?)
+    }
+}
+
+impl TryInto<UBig> for Int {
+    type Error = Error;
+
+    fn try_into(self) -> Result<UBig> {
+        Ok(self.0.try_into()?)
     }
 }
 
