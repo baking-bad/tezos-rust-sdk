@@ -88,7 +88,7 @@ impl From<tezos_operation::operations::SignedOperation> for Operation {
 #[serde(untagged)]
 pub enum OperationContent {
     // Present in alpha protocol
-    Endorsement(Endorsement),
+    // Endorsement(Endorsement),
     Preendorsement(Preendorsement),
     SeedNonceRevelation(SeedNonceRevelation),
     DoubleEndorsementEvidence(DoubleEndorsementEvidence),
@@ -148,7 +148,8 @@ impl From<tezos_operation::operations::OperationContent> for OperationContent {
                 Self::Preendorsement(value.into())
             }
             tezos_operation::operations::OperationContent::Endorsement(value) => {
-                Self::Endorsement(value.into())
+                unimplemented!()
+                //Self::Endorsement(value.into())
             }
             tezos_operation::operations::OperationContent::Reveal(value) => {
                 Self::Reveal(value.into())
@@ -177,7 +178,7 @@ impl TryFrom<OperationContent> for tezos_operation::operations::OperationContent
 
     fn try_from(value: OperationContent) -> Result<Self> {
         match value {
-            OperationContent::Endorsement(value) => Ok(Self::Endorsement(value.try_into()?)),
+            //OperationContent::Endorsement(value) => Ok(Self::Endorsement(value.try_into()?)),
             OperationContent::Preendorsement(value) => Ok(Self::Preendorsement(value.into())),
             OperationContent::SeedNonceRevelation(value) => {
                 Ok(Self::SeedNonceRevelation(value.try_into()?))
