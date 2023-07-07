@@ -19,7 +19,7 @@ use crate::internal::coder::{ConsumingDecoder, Decoder, Encoder, MutezBytesCoder
 use crate::internal::consumable_list::ConsumableList;
 use crate::{Error, Result};
 
-use super::number::Nat;
+use super::number::{Nat, Int};
 
 lazy_static! {
     static ref REGEX: Regex = Regex::new(r"^[0-9]+$").unwrap();
@@ -155,6 +155,24 @@ impl TryFrom<UBig> for Mutez {
 
     fn try_from(value: UBig) -> Result<Self> {
         Ok(Self(value.try_into()?))
+    }
+}
+
+impl TryFrom<&Int> for Mutez {
+    type Error = Error;
+
+    fn try_from(value: &Int) -> Result<Self> {
+        let uint = value.to_u64().ok_or(Error::InvalidIntegerConversion)?;
+        uint.try_into()
+    }
+}
+
+impl TryFrom<&Mutez> for Int {
+    type Error = Error;
+
+    fn try_from(value: &Mutez) -> Result<Self> {
+        let int = value.to_i64().ok_or(Error::InvalidIntegerConversion)?;
+        Ok(int.into())
     }
 }
 

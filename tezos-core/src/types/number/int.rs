@@ -201,6 +201,23 @@ impl From<&Nat> for Int {
     }
 }
 
+impl TryFrom<Int> for Nat {
+    type Error = Error;
+
+    fn try_from(value: Int) -> Result<Self> {
+        let uint: UBig = value.0.try_into()?;
+        Ok(uint.into())
+    }
+}
+
+impl TryFrom<&Int> for Nat {
+    type Error = Error;
+
+    fn try_from(value: &Int) -> Result<Self> {
+        value.clone().try_into()
+    }
+}
+
 impl From<&Int> for IBig {
     fn from(value: &Int) -> Self {
         value.0.clone()
