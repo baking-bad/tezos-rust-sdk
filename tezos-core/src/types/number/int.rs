@@ -54,6 +54,7 @@ lazy_static! {
     ShrAssign,
     Sub,
     SubAssign,
+    Hash,
 )]
 #[div(forward)]
 #[div_assign(forward)]

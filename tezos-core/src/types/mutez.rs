@@ -69,6 +69,7 @@ lazy_static! {
     Sub,
     SubAssign,
     Sum,
+    Hash,
 )]
 #[div(forward)]
 #[div_assign(forward)]
