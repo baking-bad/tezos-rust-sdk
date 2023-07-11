@@ -1,12 +1,18 @@
 use lazy_static::lazy_static;
 use ibig::{UBig, IBig};
-use num_traits::Unsigned;
+use num_traits::ToPrimitive;
+use num_integer::Integer;
 use regex::Regex;
 #[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, de};
 use std::{
     fmt::{Debug, Display},
     str::FromStr,
+};
+use derive_more::{
+    Add, AddAssign, BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Div,
+    DivAssign, Mul, MulAssign, Octal, Rem, RemAssign, Shl, ShlAssign, Shr, ShrAssign,
+    Sub, SubAssign,
 };
 
 use crate::{
@@ -23,39 +29,87 @@ lazy_static! {
 }
 
 /// An unsigned integer that can be encoded to a Zarith number
-#[derive(Debug, PartialEq, Eq, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Serialize, Deserialize),
-    serde(try_from = "String")
+#[derive(
+    Add,
+    AddAssign,
+    PartialEq,
+    PartialOrd,
+    Debug,
+    Eq,
+    Clone,
+    BitAnd,
+    BitAndAssign,
+    BitOr,
+    BitOrAssign,
+    BitXor,
+    BitXorAssign,
+    Div,
+    DivAssign,
+    Mul,
+    MulAssign,
+    Octal,
+    Rem,
+    RemAssign,
+    Shl,
+    ShlAssign,
+    Shr,
+    ShrAssign,
+    Sub,
+    SubAssign,
 )]
-pub struct Nat(String);
+#[div(forward)]
+#[div_assign(forward)]
+#[mul(forward)]
+#[mul_assign(forward)]
+#[rem(forward)]
+#[rem_assign(forward)]
+pub struct Nat(UBig);
+
+#[cfg(feature = "serde")]
+impl Serialize for Nat {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer {
+        serializer.collect_str(&self.to_string())
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> Deserialize<'de> for Nat {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+        where
+            D: serde::Deserializer<'de> {
+        Self::from(String::deserialize(deserializer)?).map_err(de::Error::custom)
+    }
+}
 
 impl Nat {
     pub fn from<S: Into<String>>(value: S) -> Result<Self> {
         let value: String = value.into();
         if Self::is_valid(&value) {
-            return Ok(Self(value));
+            return Ok(Self(UBig::from_str_radix(&value, 10)?));
         }
         Err(Error::InvalidIntegerString)
+    }
+
+    pub fn from_integer<I: Integer + ToString>(value: I) -> Self {
+        Self::from_string(value.to_string()).unwrap()
+    }
+
+    pub fn to_integer<I: Integer + FromStr>(&self) -> Result<I>
+    where
+        <I as FromStr>::Err: Debug,
+    {
+        I::from_str(&self.0.to_string())
+            .map_err(|_| Error::InvalidIntegerConversion)
     }
 
     pub fn from_string(value: String) -> Result<Self> {
         Self::from(value)
     }
 
-    pub fn from_integer<I: Unsigned + ToString>(value: I) -> Self {
-        Self::from_string(value.to_string()).unwrap()
-    }
-
-    pub fn to_integer<I: Unsigned + FromStr>(&self) -> Result<I>
-    where
-        <I as FromStr>::Err: Debug,
-    {
-        Ok(self
-            .0
-            .parse::<I>()
-            .map_err(|_error| Error::InvalidNaturalConversion)?)
+    pub(super) fn value(&self) -> &UBig {
+        &self.0
     }
 
     pub fn is_valid(value: &str) -> bool {
@@ -74,8 +128,34 @@ impl Nat {
         NaturalBytesCoder::decode_consuming(bytes)
     }
 
-    pub fn to_str(&self) -> &str {
-        &self.0
+    pub fn to_string(&self) -> String {
+        self.0.to_string()
+    }
+}
+
+impl ToPrimitive for Nat {
+    fn to_i64(&self) -> Option<i64> {
+        TryInto::<i64>::try_into(self.0.clone()).ok()
+    }
+
+    fn to_u64(&self) -> Option<u64> {
+        TryInto::<u64>::try_into(self.0.clone()).ok()
+    }
+
+    fn to_i128(&self) -> Option<i128> {
+        TryInto::<i128>::try_into(self.0.clone()).ok()
+    }
+
+    fn to_u128(&self) -> Option<u128> {
+        TryInto::<u128>::try_into(self.0.clone()).ok()
+    }
+}
+
+impl FromStr for Nat {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        Self::from_string(s.into())
     }
 }
 
@@ -87,55 +167,75 @@ impl Display for Nat {
 
 impl From<u8> for Nat {
     fn from(value: u8) -> Self {
-        Self::from_integer(value)
+        Self(UBig::from(value))
     }
 }
 
 impl From<u16> for Nat {
     fn from(value: u16) -> Self {
-        Self::from_integer(value)
+        Self(UBig::from(value))
     }
 }
 
 impl From<u32> for Nat {
     fn from(value: u32) -> Self {
-        Self::from_integer(value)
+        Self(UBig::from(value))
     }
 }
 
 impl From<u64> for Nat {
     fn from(value: u64) -> Self {
-        Self::from_integer(value)
+        Self(UBig::from(value))
     }
 }
 
 impl From<u128> for Nat {
     fn from(value: u128) -> Self {
-        Self::from_integer(value)
+        Self(UBig::from(value))
+    }
+}
+
+impl From<usize> for Nat {
+    fn from(value: usize) -> Self {
+        Self(UBig::from(value))
     }
 }
 
 impl From<UBig> for Nat {
     fn from(value: UBig) -> Self {
-        Self::from_integer(value)
+        Self(value)
     }
 }
 
 impl From<&Mutez> for Nat {
     fn from(mutez: &Mutez) -> Self {
-        Self::from_integer(mutez.value())
+        Self(UBig::from(mutez.value()))
     }
 }
 
 impl From<Nat> for String {
     fn from(value: Nat) -> Self {
-        value.0
+        value.0.to_string()
     }
 }
 
 impl From<Nat> for UBig {
     fn from(value: Nat) -> Self {
-        UBig::from_str_radix(&value.0, 10).unwrap()
+        value.0
+    }
+}
+
+impl From<Nat> for IBig {
+    fn from(value: Nat) -> Self {
+        value.0.into()
+    }
+}
+
+impl TryFrom<Nat> for Mutez {
+    type Error = Error;
+
+    fn try_from(value: Nat) -> Result<Self> {
+        value.0.try_into()
     }
 }
 
@@ -171,21 +271,19 @@ impl TryFrom<&Nat> for Vec<u8> {
     }
 }
 
-impl TryFrom<&Nat> for UBig {
+impl TryFrom<Nat> for usize {
     type Error = Error;
 
-    fn try_from(value: &Nat) -> Result<Self> {
-        UBig::from_str_radix(&value.0, 10)
-            .map_err(|e| e.into())
+    fn try_from(value: Nat) -> Result<Self> {
+        Ok(value.0.try_into()?)
     }
 }
 
-impl TryFrom<&Nat> for IBig {
+impl TryFrom<&Nat> for usize {
     type Error = Error;
 
     fn try_from(value: &Nat) -> Result<Self> {
-        IBig::from_str_radix(&value.0, 10)
-            .map_err(|e| e.into())
+        Ok(value.0.clone().try_into()?)
     }
 }
 

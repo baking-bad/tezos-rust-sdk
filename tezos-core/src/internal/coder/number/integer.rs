@@ -1,5 +1,3 @@
-use std::borrow::Borrow;
-
 use ibig::{IBig, UBig};
 use num_traits::{Signed, Zero};
 
@@ -18,7 +16,7 @@ pub struct IntegerBytesCoder;
 
 impl Encoder<Int, Vec<u8>, Error> for IntegerBytesCoder {
     fn encode(value: &Int) -> Result<Vec<u8>> {
-        let value: IBig = value.try_into()?;
+        let value: IBig = value.into();
         let abs: UBig = value.abs().try_into()?;
 
         let byte = &abs & UBig::from(0b0011_1111u8);
@@ -66,7 +64,7 @@ impl ConsumingDecoder<Int, u8, Error> for IntegerBytesCoder {
         let has_next = (byte & 0b1000_0000u8) == 0b1000_0000u8;
         let abs = if has_next {
             let nat = NaturalBytesCoder::decode_consuming(value)?;
-            let decoded: IBig = nat.borrow() .try_into()?;
+            let decoded: IBig = nat.clone().into();
             part + (decoded << 6)
         } else {
             part

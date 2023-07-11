@@ -1,3 +1,4 @@
+use tezos_core::types::number::Nat;
 use crate::models::{
     error::RpcError,
     operation::{
@@ -23,7 +24,7 @@ impl RpcOperationResult for RegisterGlobalConstantOperationResult {
         0
     }
 
-    fn consumed_gas(&self) -> ibig::UBig {
+    fn consumed_gas(&self) -> Nat {
         self.consumed_gas
             .as_ref()
             .map_or(0u8.into(), |consumed_gas| {
@@ -31,7 +32,7 @@ impl RpcOperationResult for RegisterGlobalConstantOperationResult {
             })
     }
 
-    fn consumed_milligas(&self) -> ibig::UBig {
+    fn consumed_milligas(&self) -> Nat {
         self.consumed_milligas
             .as_ref()
             .map_or(0u8.into(), |consumed_gas| {
@@ -39,7 +40,7 @@ impl RpcOperationResult for RegisterGlobalConstantOperationResult {
             })
     }
 
-    fn paid_storage_size_diff(&self) -> Option<ibig::UBig> {
+    fn paid_storage_size_diff(&self) -> Option<Nat> {
         None
     }
 

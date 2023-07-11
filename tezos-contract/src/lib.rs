@@ -192,7 +192,7 @@
 //!     let source: ImplicitAddress = "tz1fJGtrdmckD3VkiDxqUEci5h4gGcvocw6e".try_into().unwrap();
 //!     let counter: Nat = (rpc.get_contract_counter(&source.clone().into())
 //!                     .send()
-//!                     .await? + 1u8).into();
+//!                     .await? + 1u8.into()).into();
 //!     let transaction = partial_transaction.complete_with(
 //!         source,
 //!         counter,
@@ -276,7 +276,7 @@ mod test {
             .await?
             .try_into()?;
 
-        assert_eq!("164748675300576703", balance.to_str());
+        assert_eq!("164748675300576703", &balance.to_string());
         Ok(())
     }
 
