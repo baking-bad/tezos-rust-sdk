@@ -191,9 +191,7 @@ impl SignedOperation {
     /// Returns an injectable string that can be used to inject the operation into the Tezos blockchain
     /// using the `tezos-rpc` crate.
     pub fn to_injectable_string(&self) -> Result<String> {
-        let forged_bytes = self.to_forged_bytes()?;
-        let signature_bytes = self.signature.to_bytes()?;
-        Ok(hex::encode([forged_bytes, signature_bytes].concat()))
+        Ok(hex::encode(self.to_bytes()?))
     }
 
     /// Creates a new instance of [SignedOperation].
@@ -209,6 +207,26 @@ impl SignedOperation {
     /// No validation of the signature is performed.
     pub fn from(operation: UnsignedOperation, signature: Signature) -> Self {
         Self::new(operation.branch, operation.contents, signature)
+    }
+
+    /// Static method that decodes [SignedOperation] from raw bytes
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
+        const SIG_SIZE: usize = 64;
+        if bytes.len() <= SIG_SIZE {
+            return Err(crate::Error::InvalidBytes);
+        }
+    
+        let unsigned_op = UnsignedOperation::from_forged_bytes(&bytes[..bytes.len() - SIG_SIZE])?;
+        let signature = Signature::from_bytes(&bytes[bytes.len() - SIG_SIZE..])?;
+     
+        Ok(Self::from(unsigned_op, signature))
+    }
+
+    /// Encodes signed operation to raw bytes
+    pub fn to_bytes(&self) -> Result<Vec<u8>> {
+        let forged_bytes = self.to_forged_bytes()?;
+        let signature_bytes = self.signature.to_bytes()?;
+        Ok([forged_bytes, signature_bytes].concat())
     }
 
     /// Static method that calculates and encodes operation hash given its forged bytes (including signature)
